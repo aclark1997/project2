@@ -24,12 +24,12 @@ class GiphyCLI:
 		self.api = GiphyAPI(API_KEY)
 	def construct_trending(self, count, md):
 		return "..."
-	def construct_search(self, count, md, term):
+	def construct_search(self, count, md, term, lucky):
 		return "..."
 	def print_trending(self, count, md):
 		print(self.construct_trending(count, md))
-	def print_search(self, count, md, term):
-		print(self.construct_search(count, md, term))
+	def print_search(self, count, md, term, lucky):
+		print(self.construct_search(count, md, term, lucky))
 
 cli = GiphyCLI()
 
@@ -50,25 +50,42 @@ def trending(count, markdown):
     #print(api.get_trending(int(count)))
 
 @gif.command()
+@click.option('--lucky', is_flag=True, default=False)
 @click.option('--markdown', is_flag=True, default=False)
 @click.option('--count', default=5)
 @click.argument("term")
-def search(count, markdown, term):
+def search(count, markdown, lucky, term):
     print("search subcommand called!")
-    cli.print_search(count, markdown, term)
+    cli.print_search(count, markdown, lucky, term)
 
 def CLITests(): 
 	trending = cli.construct_trending(5, False)
 	if len(trending) <= len("https://giphy.com/"): #our message will at least be this long
-		print("CLI TEST FAILED, did not return a constructed list")
+		print("CLI TEST FAILED, did not return a constructed trending list")
 		print("ABORTING CLI TESTS!")
 		return
 	trending = cli.construct_trending(0, False)
 	if trending != "Please request at least 1 result.":
-		print("CLI TEST FAILED, did not return warning when count set to 0")
+		print("CLI TEST FAILED, did not return warning when trending count set to 0")
 	trending = cli.construct_trending(5, True)
 	if len(trending) >= 4 and trending[3] != "!":
-		print("CLI TEST FAILED, did not print in markdown when asked")
+		print("CLI TEST FAILED, did not print trending in markdown when asked")
+
+	search = cli.construct_search(5, False, "cat", False)
+	if len(search) <= len("https://giphy.com/"): #our message will at least be this long
+		print("CLI TEST FAILED, did not return a constructed search list")
+		print("ABORTING CLI TESTS!")
+		return
+	search = cli.construct_search(0, False, "cat", False)
+	if search != "Please request at least 1 result.":
+		print("CLI TEST FAILED, did not return warning when search count set to 0")
+	search = cli.construct_search(5, True, "cat", False)
+	if len(search) >= 4 and search[3] != "!":
+		print("CLI TEST FAILED, did not print search in markdown when asked")
+	
+	search = cli.construct_search(5, True, "cat", True)
+	if search[len(search)-1] != '\n':
+		print("CLI TEST FAILED, did not print a single result when \'feeling lucky\'")
 
 def APITests():
 	api = GiphyAPI(API_KEY)
