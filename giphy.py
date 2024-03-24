@@ -1,6 +1,6 @@
 import requests
 import os
-import click
+import click 
 
 API_KEY = os.environ["GIPHY_API_KEY"]
 
@@ -19,41 +19,64 @@ class GiphyAPI:
 		result = requests.get("https://api.giphy.com/v1/gifs/search?api_key="+self.key+"&q=" + q + "&limit=" + str(count) +"&offset=0&rating=g")
 		return result.json()
 
-@click.group()
+class GiphyCLI:
+	def __init(self):
+		self.api = GiphyAPI(API_KEY)
+	def construct_trending(self, count, md):
+		return "..."
+	def construct_search(self, count, md, term):
+		return "..."
+	def print_trending(self, count, md):
+		print(self.construct_trending(count, md))
+	def print_search(self, count, md, term):
+		print(self.construct_search(count, md, term))
+
+cli = GiphyCLI()
+
+@click.group() 
 def gif():
     print("hello from giphy cli!")
+    SoftTests()
     MediumTests()
 
 
 @gif.command()
-def trending():
+@click.option('--markdown', is_flag=True, default=False) 
+@click.option('--count', default=5)
+def trending(count, markdown):
     print("trending subcommand called!")
-    api = GiphyAPI(API_KEY)
-
+    cli.print_trending(count, markdown)
+    #api = GiphyAPI(API_KEY)
+    #print(api.get_trending(int(count)))
 
 @gif.command()
-def search():
+@click.option('--markdown', is_flag=True, default=False)
+@click.option('--count', default=5)
+@click.argument("term")
+def search(count, markdown, term):
     print("search subcommand called!")
-    api = GiphyAPI(API_KEY)
+    cli.print_search(count, markdown, term)
 
+def SoftTests(): 
+	print("soft test")
 
 def MediumTests():
 	api = GiphyAPI(API_KEY)
 	resp = api.get_trending(5)
 
 	if resp["meta"]["status"] == 401:
-		print("TEST FAILED, API KEY INCORRECT")
+		print("API TEST FAILED, API KEY INCORRECT")
 		print("ABORTING TESTS")
 		exit()
 		return
 
 	if resp["pagination"]["total_count"] < 5:
-		print("TEST FAILED, TRENDING DID NOT RETURN AT LEAST 5 RESULTS")
+		print("API TEST FAILED, TRENDING DID NOT RETURN AT LEAST 5 RESULTS")
 
 	resp = api.get_search(5, "cat")
 
 	if resp["meta"]["status"] != 200:
-		print("TEST FAILED, STATUS RETURNED FROM SEARCH NOT 200/OK")
+		print("API TEST FAILED, STATUS RETURNED FROM SEARCH NOT 200/OK")
 
 if __name__ == "__main__":
     gif()
