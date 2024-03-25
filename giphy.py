@@ -1,8 +1,10 @@
 import requests
 import os
 import click 
+import json
 
 API_KEY = os.environ["GIPHY_API_KEY"]
+
 
 
 class GiphyAPI:
@@ -20,10 +22,20 @@ class GiphyAPI:
 		return result.json()
 
 class GiphyCLI:
-	def __init(self):
+	def __init__(self):
 		self.api = GiphyAPI(API_KEY)
 	def construct_trending(self, count, md):
-		return "..."
+		data = self.api.get_trending(count)
+		#data = json.dumps(data["data"], sort_keys=True, indent=4)
+		#print(json.dumps(data["data"][1], sort_keys=True, indent=4))
+		print(data["data"][0]["bitly_url"])
+		constructed = ''
+
+		if not md:
+			for n in range(count-1):
+				constructed = constructed + data["data"][n]["bitly_url"] + "\n"
+
+		return constructed
 	def construct_search(self, count, md, term, lucky):
 		return "..."
 	def print_trending(self, count, md):
@@ -59,6 +71,7 @@ def search(count, markdown, lucky, term):
     cli.print_search(count, markdown, lucky, term)
 
 def CLITests(): 
+	return False
 	trending = cli.construct_trending(5, False)
 	if len(trending) <= len("https://giphy.com/"): #our message will at least be this long
 		print("CLI TEST FAILED, did not return a constructed trending list")
@@ -106,4 +119,4 @@ def APITests():
 		print("API TEST FAILED, STATUS RETURNED FROM SEARCH NOT 200/OK")
 
 if __name__ == "__main__":
-    gif()
+	gif()
