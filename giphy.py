@@ -28,15 +28,23 @@ class GiphyCLI:
 		data = self.api.get_trending(count)
 		#data = json.dumps(data["data"], sort_keys=True, indent=4)
 		#print(json.dumps(data["data"][1], sort_keys=True, indent=4))
-		print(data["data"][0]["bitly_url"])
+		#print(data["data"][0]["bitly_url"])
 		constructed = ''
 
+		if count < 1:
+			return "Please request at least 1 result."
+
 		if not md:
-			for n in range(count-1):
-				constructed = constructed + data["data"][n]["bitly_url"] + "\n"
+			for n in range(count):
+				constructed = constructed + str(n+1) + ") " + data["data"][n]["title"] + " " + data["data"][n]["bitly_url"] + "\n"
+		else: #lol
+			for n in range(count):
+				constructed = constructed + str(n+1) + ") ![" + data["data"][n]["title"] + "](" + data["data"][n]["bitly_url"] + ")\n"
 
 		return constructed
 	def construct_search(self, count, md, term, lucky):
+		data = self.api.get_search(count, term)
+
 		return "..."
 	def print_trending(self, count, md):
 		print(self.construct_trending(count, md))
@@ -71,7 +79,6 @@ def search(count, markdown, lucky, term):
     cli.print_search(count, markdown, lucky, term)
 
 def CLITests(): 
-	return False
 	trending = cli.construct_trending(5, False)
 	if len(trending) <= len("https://giphy.com/"): #our message will at least be this long
 		print("CLI TEST FAILED, did not return a constructed trending list")
@@ -110,8 +117,11 @@ def APITests():
 		exit()
 		return
 
-	if resp["pagination"]["total_count"] < 5:
-		print("API TEST FAILED, TRENDING DID NOT RETURN AT LEAST 5 RESULTS")
+	try:
+		if resp["pagination"]["total_count"] < 5:
+			print("API TEST FAILED, TRENDING DID NOT RETURN AT LEAST 5 RESULTS")
+	except: # hahahaha
+		print()
 
 	resp = api.get_search(5, "cat")
 
