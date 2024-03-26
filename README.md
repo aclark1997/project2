@@ -2,4 +2,4 @@
 
 simple giphy command line tool using requests and click
 
-pex documentation is so awful i am wanting to drop out of college right now
+i couldn't get it to read back my json out of the file for the tests, and i couldnt bundle it together either. you'll have to extract the .pip folder out of the zip file.
