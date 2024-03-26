@@ -1,5 +1,8 @@
 import requests
 import os
+
+sys.path.append(sys.path.append(os.path.abspath('.pip')))
+
 import click 
 import json
 from random import randrange
