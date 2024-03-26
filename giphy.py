@@ -6,6 +6,8 @@ from random import randrange
 
 API_KEY = os.environ["GIPHY_API_KEY"]
 
+
+
 class GiphyAPI:
 	def __init__(self, api_key):
 		self.key = api_key
@@ -23,8 +25,7 @@ class GiphyAPI:
 class GiphyCLI:
 	def __init__(self):
 		self.api = GiphyAPI(API_KEY)
-	def construct_trending(self, count, md):
-		data = self.api.get_trending(count)
+	def construct_trending(self, data, count, md):
 		#data = json.dumps(data["data"], sort_keys=True, indent=4)
 		#print(json.dumps(data["data"][1], sort_keys=True, indent=4))
 		#print(data["data"][0]["bitly_url"])
@@ -41,8 +42,7 @@ class GiphyCLI:
 				constructed = constructed + str(n+1) + ") ![" + data["data"][n]["title"] + "](" + data["data"][n]["bitly_url"] + ")\n"
 
 		return constructed
-	def construct_search(self, count, md, term, lucky):
-		data = self.api.get_search(count, term)
+	def construct_search(self, data, count, md, term, lucky):
 		#data = json.dumps(data["data"], sort_keys=True, indent=4)
 		#print(json.dumps(data["data"][1], sort_keys=True, indent=4))
 		#print(data["data"][0]["bitly_url"])
@@ -68,9 +68,11 @@ class GiphyCLI:
 
 		return constructed
 	def print_trending(self, count, md):
-		print(self.construct_trending(count, md))
+		data = self.api.get_trending(count)
+		print(self.construct_trending(data, count, md))
 	def print_search(self, count, md, term, lucky):
-		print(self.construct_search(count, md, term, lucky))
+		data = self.api.get_search(count, term)
+		print(self.construct_search(data, count, md, term, lucky))
 
 cli = GiphyCLI()
 
@@ -99,39 +101,46 @@ def search(count, markdown, lucky, term):
     print("search subcommand called!")
     cli.print_search(count, markdown, term, lucky)
 
-def CLITests(): 
-	trending = cli.construct_trending(5, False)
+def CLITests():
+	f = open("testjson1.txt", "r")
+	data = json.loads(f.read())
+	f.close()
+
+	trending = cli.construct_trending(data, 5, False)
 	if len(trending) <= len("https://giphy.com/"): #our message will at least be this long
 		print("CLI TEST FAILED, did not return a constructed trending list")
 		print("ABORTING CLI TESTS!")
 		return
-	trending = cli.construct_trending(0, False)
+	trending = cli.construct_trending(data, 0, False)
 	if trending != "Please request at least 1 result.":
 		print("CLI TEST FAILED, did not return warning when trending count set to 0")
-	trending = cli.construct_trending(5, True)
+	trending = cli.construct_trending(data, 5, True)
 	if len(trending) >= 4 and trending[3] != "!":
 		print("CLI TEST FAILED, did not print trending in markdown when asked")
 
-	search = cli.construct_search(5, False, "cat", False)
+	f = open("testjson2.txt", "r")
+	data = json.loads(f.read())
+	f.close()
+
+	search = cli.construct_search(data, 5, False, "cat", False)
 	if len(search) <= len("https://giphy.com/"): #our message will at least be this long
 		print("CLI TEST FAILED, did not return a constructed search list")
 		print("ABORTING CLI TESTS!")
 		return
-	search = cli.construct_search(0, False, "cat", False)
+	search = cli.construct_search(data, 0, False, "cat", False)
 	if search != "Please request at least 1 result.":
 		print("CLI TEST FAILED, did not return warning when search count set to 0")
-	search = cli.construct_search(5, True, "cat", False)
+	search = cli.construct_search(data, 5, True, "cat", False)
 	if len(search) >= 4 and search[3] != "!":
 		print("CLI TEST FAILED, did not print search in markdown when asked")
 	
-	search = cli.construct_search(5, True, "cat", True)
+	search = cli.construct_search(data, 5, True, "cat", True)
 	if search[len(search)-1] != '\n':
 		print("CLI TEST FAILED, did not print a single result when \'feeling lucky\'")
 
 def APITests():
 	api = GiphyAPI(API_KEY)
 	resp = api.get_trending(5)
-
 	if resp["meta"]["status"] == 401:
 		print("API TEST FAILED, API KEY INCORRECT")
 		print("ABORTING API TESTS!")
