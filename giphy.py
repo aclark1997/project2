@@ -2,10 +2,9 @@ import requests
 import os
 import click 
 import json
+from random import randrange
 
 API_KEY = os.environ["GIPHY_API_KEY"]
-
-
 
 class GiphyAPI:
 	def __init__(self, api_key):
@@ -36,7 +35,7 @@ class GiphyCLI:
 
 		if not md:
 			for n in range(count):
-				constructed = constructed + str(n+1) + ") " + data["data"][n]["title"] + " " + data["data"][n]["bitly_url"] + "\n"
+				constructed = constructed + str(n+1) + ") " + data["data"][n]["title"] + " " + data["data"][n]["bitly_url"] + ")\n"
 		else: #lol
 			for n in range(count):
 				constructed = constructed + str(n+1) + ") ![" + data["data"][n]["title"] + "](" + data["data"][n]["bitly_url"] + ")\n"
@@ -44,8 +43,30 @@ class GiphyCLI:
 		return constructed
 	def construct_search(self, count, md, term, lucky):
 		data = self.api.get_search(count, term)
+		#data = json.dumps(data["data"], sort_keys=True, indent=4)
+		#print(json.dumps(data["data"][1], sort_keys=True, indent=4))
+		#print(data["data"][0]["bitly_url"])
+		constructed = ''
+		
 
-		return "..."
+		if count < 1:
+			return "Please request at least 1 result."
+		
+		if lucky:
+			pick = randrange(count)
+			if md:
+				return "!["+data["data"][pick]["title"] + " (" + data["data"][pick]["bitly_url"] + ")"
+			else:
+				return data["data"][pick]["title"] + " " + data["data"][pick]["bitly_url"]
+
+		if not md:
+			for n in range(count):
+				constructed = constructed + str(n+1) + ") " + data["data"][n]["title"] + " (" + data["data"][n]["bitly_url"] + "\n"
+		else: #lol
+			for n in range(count):
+				constructed = constructed + str(n+1) + ") ![" + data["data"][n]["title"] + "](" + data["data"][n]["bitly_url"] + ")\n"
+
+		return constructed
 	def print_trending(self, count, md):
 		print(self.construct_trending(count, md))
 	def print_search(self, count, md, term, lucky):
@@ -76,7 +97,7 @@ def trending(count, markdown):
 @click.argument("term")
 def search(count, markdown, lucky, term):
     print("search subcommand called!")
-    cli.print_search(count, markdown, lucky, term)
+    cli.print_search(count, markdown, term, lucky)
 
 def CLITests(): 
 	trending = cli.construct_trending(5, False)
